@@ -16,7 +16,18 @@ public class TutorialCommand {
         var source = context.getSource();
         var blockpos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
 
-        // posの位置にダイヤモンドブロックを設置
-        source.getLevel().setBlock(blockpos, Blocks.DIAMOND_BLOCK.defaultBlockState(), 3);
+        var numX = context.getArgument("X方向の長さ", Integer.class);
+        var numY = context.getArgument("Y方向の長さ", Integer.class);
+        var numZ = context.getArgument("Z方向の長さ", Integer.class);
+
+        // X方向にnumX、Y方向にnumY、Z方向にnumZの長さのダイヤモンドブロックを設置
+        for (int x = 0; x < numX; x++) {
+            for (int y = 0; y < numY; y++) {
+                for (int z = 0; z < numZ; z++) {
+                    // posの位置にダイヤモンドブロックを設置
+                    source.getLevel().setBlock(blockpos.offset(x, y, z), Blocks.DIAMOND_BLOCK.defaultBlockState(), 3);
+                }
+            }
+        }
     }
 }

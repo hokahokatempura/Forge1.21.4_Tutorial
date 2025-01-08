@@ -2,6 +2,7 @@ package com.hokahokatempura.tutorialmod;
 
 import com.hokahokatempura.tutorialmod.commands.TutorialCommand;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import net.minecraft.commands.CommandSourceStack;
@@ -41,20 +42,22 @@ public class TutorialMod {
         public static void onClientSetup(FMLClientSetupEvent event) {
         }
     }
-    
+
     // MOD内でコマンドを登録する場合は、以下のメソッドにコマンド登録処理を記述する
     @SubscribeEvent
     public void onRegisterLocalizeCommand(RegisterCommandsEvent event) {
         // "putblock"コマンドを登録
         LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal("putblock")
-            // 引数を設定する ("ブロックを置く場所"という引数をVec3Argument.vec3()で受け取る)
-            .then(Commands.argument("ブロックを置く場所", Vec3Argument.vec3())
-                .executes(context -> {
-                    // コマンドが実行されると呼び出される処理
-                    TutorialCommand.putBlockCommand(context);
-                    return Command.SINGLE_SUCCESS;
-                })
-            );
+                // 引数を設定する ("ブロックを置く場所"という引数をVec3Argument.vec3()で受け取る)
+                .then(Commands.argument("ブロックを置く場所", Vec3Argument.vec3())
+                        .then(Commands.argument("X方向の長さ", IntegerArgumentType.integer())
+                                .then(Commands.argument("Y方向の長さ", IntegerArgumentType.integer())
+                                        .then(Commands.argument("Z方向の長さ", IntegerArgumentType.integer())
+                                                .executes(context -> {
+                                                    // コマンドが実行されると呼び出される処理
+                                                    TutorialCommand.putBlockCommand(context);
+                                                    return Command.SINGLE_SUCCESS;
+                                                })))));
         event.getDispatcher().register(builder);
     }
 }
