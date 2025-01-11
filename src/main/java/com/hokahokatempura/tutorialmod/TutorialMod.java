@@ -93,5 +93,19 @@ public class TutorialMod {
                                                     })))));
             event.getDispatcher().register(builder3);
         }
+
+        {
+            // "mengersponge"コマンドを登録
+            LiteralArgumentBuilder<CommandSourceStack> builder3 = Commands.literal("mengersponge")
+                    // 引数を設定する ("ブロックを置く場所"という引数をVec3Argument.vec3()で受け取る)
+                    .then(Commands.argument("中心の座標", Vec3Argument.vec3())
+                            .then(Commands.argument("繰り返しの深さ", IntegerArgumentType.integer())
+                                    .executes(context -> {
+                                        // コマンドが実行されると呼び出される処理
+                                        TutorialCommand.mengerSpongeCommand(context);
+                                        return Command.SINGLE_SUCCESS;
+                                    })));
+            event.getDispatcher().register(builder3);
+        }
     }
 }
