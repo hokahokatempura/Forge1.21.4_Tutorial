@@ -15,8 +15,9 @@ public class TutorialCommand {
         var pos = Vec3Argument.getVec3(context, "ブロックを置く場所");
         var source = context.getSource();
         var blockpos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
+        var level = source.getLevel();
 
         // posの位置にダイヤモンドブロックを設置
-        source.getLevel().setBlock(blockpos, Blocks.DIAMOND_BLOCK.defaultBlockState(), 3);
+        level.setBlock(blockpos, Blocks.DIAMOND_BLOCK.defaultBlockState(), 3);
     }
 }
