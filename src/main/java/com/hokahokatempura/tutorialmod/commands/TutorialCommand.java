@@ -139,7 +139,6 @@ public class TutorialCommand {
         }
     }
 
-    private static Timer mengerSpongeTimer = null;
     // "mengersponge"コマンドが実行されたときの処理
     public static void mengerSpongeCommand(CommandContext<CommandSourceStack> context) {
         var source = context.getSource();
@@ -152,18 +151,6 @@ public class TutorialCommand {
         // 事前に範囲内のブロックをリセットして空気にする
         clearTargetVolume(level, blockpos, range);
 
-        // すでにメンガーのスポンジ生成処理が実行中の場合はキャンセルする
-        if (mengerSpongeTimer != null) {
-            mengerSpongeTimer.cancel();
-        }
-        // mergeSpongeTimerを使って非同期処理を行う
-        mengerSpongeTimer = new Timer();
-        mengerSpongeTimer.schedule(new java.util.TimerTask() {
-            @Override
-            public void run() {
-                // メンガーのスポンジを生成
-                generateMengerSponge(blockpos, depth, level);
-            }
-        }, 0);
+        generateMengerSponge(blockpos, depth, level);
     }
 }
