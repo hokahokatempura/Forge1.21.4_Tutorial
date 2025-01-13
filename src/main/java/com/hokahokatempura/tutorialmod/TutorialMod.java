@@ -2,6 +2,7 @@ package com.hokahokatempura.tutorialmod;
 
 import com.hokahokatempura.tutorialmod.commands.TutorialCommand;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
@@ -96,7 +97,7 @@ public class TutorialMod {
 
         {
             // "mengersponge"コマンドを登録
-            LiteralArgumentBuilder<CommandSourceStack> builder3 = Commands.literal("mengersponge")
+            LiteralArgumentBuilder<CommandSourceStack> builder4 = Commands.literal("mengersponge")
                     // 引数を設定する ("ブロックを置く場所"という引数をVec3Argument.vec3()で受け取る)
                     .then(Commands.argument("中心の座標", Vec3Argument.vec3())
                             .then(Commands.argument("繰り返しの深さ", IntegerArgumentType.integer())
@@ -105,7 +106,22 @@ public class TutorialMod {
                                         TutorialCommand.mengerSpongeCommand(context);
                                         return Command.SINGLE_SUCCESS;
                                     })));
-            event.getDispatcher().register(builder3);
+            event.getDispatcher().register(builder4);
+        }
+
+        {
+            // "spiral"コマンドを登録
+            LiteralArgumentBuilder<CommandSourceStack> builder5 = Commands.literal("spiral")
+                    // 引数を設定する ("ブロックを置く場所"という引数をVec3Argument.vec3()で受け取る)
+                    .then(Commands.argument("中心の座標", Vec3Argument.vec3())
+                            .then(Commands.argument("Y方向の長さ", IntegerArgumentType.integer())
+                                    .then(Commands.argument("回転速度y", FloatArgumentType.floatArg())
+                                            .executes(context -> {
+                                                // コマンドが実行されると呼び出される処理
+                                                TutorialCommand.spiralCommand(context);
+                                                return Command.SINGLE_SUCCESS;
+                                            }))));
+            event.getDispatcher().register(builder5);
         }
     }
 }

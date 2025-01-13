@@ -1,14 +1,11 @@
 package com.hokahokatempura.tutorialmod.commands;
 
-import java.util.Timer;
-
 import com.mojang.brigadier.context.CommandContext;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Blocks;
 
 public class TutorialCommand {
@@ -19,6 +16,7 @@ public class TutorialCommand {
         var pos = Vec3Argument.getVec3(context, "ブロックを置く場所");
         var source = context.getSource();
         var blockpos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
+        var level = source.getLevel();
 
         var numX = context.getArgument("X方向の長さ", Integer.class);
         var numY = context.getArgument("Y方向の長さ", Integer.class);
@@ -29,7 +27,7 @@ public class TutorialCommand {
             for (int y = 0; y < numY; y++) {
                 for (int z = 0; z < numZ; z++) {
                     // posの位置にダイヤモンドブロックを設置
-                    source.getLevel().setBlock(blockpos.offset(x, y, z), Blocks.DIAMOND_BLOCK.defaultBlockState(), 3);
+                    level.setBlock(blockpos.offset(x, y, z), Blocks.DIAMOND_BLOCK.defaultBlockState(), 3);
                 }
             }
         }
@@ -40,6 +38,7 @@ public class TutorialCommand {
         var pos = Vec3Argument.getVec3(context, "中心の座標");
         var source = context.getSource();
         var blockpos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
+        var level = source.getLevel();
 
         var numX = context.getArgument("X方向の長さ", Integer.class);
         var numY = context.getArgument("Y方向の長さ", Integer.class);
@@ -51,9 +50,9 @@ public class TutorialCommand {
                 for (int z = -numZ; z < numZ; z++) {
                     var targetPos = blockpos.offset(x, y, z);
                     // 火を発生させようとしている位置が空気だった場合のみ火を設置したい
-                    if (source.getLevel().getBlockState(targetPos) == Blocks.AIR.defaultBlockState()) {
+                    if (level.getBlockState(targetPos) == Blocks.AIR.defaultBlockState()) {
                         // また、その位置の下に空気ではないブロックがある場合のみ火を設置したい
-                        if (source.getLevel().getBlockState(targetPos.below()) != Blocks.AIR.defaultBlockState()) {
+                        if (level.getBlockState(targetPos.below()) != Blocks.AIR.defaultBlockState()) {
                             // 火を設置する
                             source.getLevel().setBlock(targetPos, Blocks.FIRE.defaultBlockState(), 3);
                         }
@@ -68,6 +67,7 @@ public class TutorialCommand {
         var pos = Vec3Argument.getVec3(context, "中心の座標");
         var source = context.getSource();
         var blockpos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
+        var level = source.getLevel();
 
         var numX = context.getArgument("X方向の長さ", Integer.class);
         var numY = context.getArgument("Y方向の長さ", Integer.class);
@@ -79,7 +79,7 @@ public class TutorialCommand {
                 for (int z = -numZ; z < numZ; z++) {
                     var targetPos = blockpos.offset(x, y, z);
                     // 対象のブロックが空気ではなかった場合のみ処理を行う
-                    if (source.getLevel().getBlockState(targetPos) != Blocks.AIR.defaultBlockState()) {
+                    if (level.getBlockState(targetPos) != Blocks.AIR.defaultBlockState()) {
                         // ブロックリストからランダムなブロックを取得
                         var randomIndex = (int) (Math.random() * BlockList.blocks.length);
                         var randomBlock = BlockList.blocks[randomIndex];
@@ -152,5 +152,55 @@ public class TutorialCommand {
         clearTargetVolume(level, blockpos, range);
 
         generateMengerSponge(blockpos, depth, level);
+    }
+
+    // "spiral"コマンドが実行されたときの処理
+    public static void spiralCommand(CommandContext<CommandSourceStack> context) {
+        var pos = Vec3Argument.getVec3(context, "中心の座標");
+        var source = context.getSource();
+        var blockpos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
+        var level = source.getLevel();
+        var numY = context.getArgument("Y方向の長さ", Integer.class);
+        var roty = context.getArgument("回転速度y", Float.class);
+
+        // まず、y = 0 ~ numYの範囲のブロックを消去しておく
+        for (int y = 0; y < numY; ++y) {
+            double radiusMin = (int) (y / 5.0);
+
+            // y軸を中心として、半径0 ~ radiusMinの範囲のブロックを消去
+            // 角度を Math.PI / 180 ずつ増やしていき、半径を 0.1 ずつ増やしていく
+            for (double theta = 0; theta < 2 * Math.PI; theta += Math.PI / 180) {
+                for (double radius = 0; radius < radiusMin; radius += 0.1) {
+                    int x = (int) (radius * Math.cos(theta));
+                    int z = (int) (radius * Math.sin(theta));
+                    var targetPos = blockpos.offset(x, y, z);
+
+                    // 対象の座標に空気を設置
+                    level.setBlock(targetPos, Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+
+        // 改めて、y = 0 ~ numYの範囲にらせん状にブロックを生成していく
+        for (int y = 0; y < numY; ++y) {
+            double radiusMin = (int) (y / 5.0);
+            double radiusMax = radiusMin + 2.0;
+
+            // y軸を中心として、半径radiusMin ~ radiusMaxの範囲にブロックを設置
+            // 角度を Math.PI / 180 ずつ増やしていき、半径を 0.1 ずつ増やしていく
+            for (double theta = 0; theta < 2 * Math.PI; theta += Math.PI / 180) {
+                for (double radius = radiusMin; radius < radiusMax; radius += 0.05) {
+                    int x = (int) (radius * Math.cos(theta));
+                    int z = (int) (radius * Math.sin(theta));
+                    var targetPos = blockpos.offset(x, y, z);
+
+                    // 対象の座標に羊毛ブロックを設置
+                    // 角度に応じて色を変えていく
+                    var block = BlockList.woolBlocks[((int) (((theta + y * roty) / (Math.PI * 2.0))
+                            * BlockList.woolBlocks.length)) % BlockList.woolBlocks.length];
+                    level.setBlock(targetPos, block.defaultBlockState(), 3);
+                }
+            }
+        }
     }
 }
